@@ -30,7 +30,7 @@
             da->items = realloc(da->items, da->cap * da->elem_size);                    \
             assert(da->items != NULL && "Memory allocation error!\n");                  \
         }                                                                               \
-        da->items[da->size++] = val;                                                    \
+        memcpy(&da->items[da->size++], &val, da->elem_size);                              \
     }                                                                                   \
     static inline void name##_##da_append_many(name* da, int n, ...) {                  \
         va_list va;                                                                     \
@@ -46,7 +46,7 @@
     static inline type name##_##da_get_at(name da, int index) {                         \
         return da.items[index];                                                         \
     }                                                                                   \
-    static inline type name##_##da_get_val_idx(name da, type val) {                     \
+    static inline int name##_##da_get_val_idx(name da, type val) {                      \
         int idx = -1;                                                                   \
         for (int i = 0; i < da.size; ++i) {                                             \
              if (!memcmp(&val, &da.items[i], da.elem_size)) idx = i;                    \
