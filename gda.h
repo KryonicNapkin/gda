@@ -30,7 +30,17 @@
             da->items = realloc(da->items, da->cap * da->elem_size);                    \
             assert(da->items != NULL && "Memory allocation error!\n");                  \
         }                                                                               \
-        memcpy(&da->items[da->size++], &val, da->elem_size);                              \
+        memcpy(&da->items[da->size++], &val, da->elem_size);                            \
+    }                                                                                   \
+    static inline void name##_##da_append_at(name* da, type val, int idx) {             \
+        assert(idx >= 0 && idx < da->cap && "Invalid index provided\n");                \
+        if (da->size >= da->cap) {                                                      \
+            da->cap *= __CAP_MULTI_FACTOR;                                              \
+            da->items = realloc(da->items, da->cap * da->elem_size);                    \
+            assert(da->items != NULL && "Memory allocation error!\n");                  \
+        }                                                                               \
+        memcpy(&da->items[idx], &val, da->elem_size);                                   \
+        da->size++;                                                                     \
     }                                                                                   \
     static inline void name##_##da_append_many(name* da, int n, ...) {                  \
         va_list va;                                                                     \
@@ -43,8 +53,8 @@
     static inline type name##_##da_pop(name* da) {                                      \
         return da->items[--da->size];                                                   \
     }                                                                                   \
-    static inline type name##_##da_get_at(name da, int index) {                         \
-        return da.items[index];                                                         \
+    static inline type name##_##da_get_at(name da, int idx) {                           \
+        return da.items[idx];                                                           \
     }                                                                                   \
     static inline int name##_##da_get_val_idx(name da, type val) {                      \
         int idx = -1;                                                                   \
@@ -53,8 +63,8 @@
         }                                                                               \
         return idx;                                                                     \
     }                                                                                   \
-    static inline void name##_##da_print(name da, void (*_da_print)(name)) {            \
-        (*_da_print)(da);                                                               \
+    static inline void name##_##da_print(name da, void (*print_func)(name)) {           \
+        (*print_func)(da);                                                              \
     }                                                                                   \
     static inline void name##_##da_reverse(name* da) {                                  \
         for (int i = 0, j = da->size-1; j - i > 1; ++i, --j) {                          \
@@ -62,16 +72,6 @@
             da->items[i] = da->items[j];                                                \
             da->items[j] = temp;                                                        \
         }                                                                               \
-    }                                                                                   \
-    static inline void name##_##da_append_at(name* da, type val, int idx) {             \
-        assert(idx >= 0 && idx < da->cap && "Invalid index provided\n");                \
-        if (da->size >= da->cap) {                                                      \
-            da->cap *= __CAP_MULTI_FACTOR;                                              \
-            da->items = realloc(da->items, da->cap * da->elem_size);                    \
-            assert(da->items != NULL && "Memory allocation error!\n");                  \
-        }                                                                               \
-        da->items[idx] = val;                                                           \
-        da->size++;                                                                     \
     }                                                                                   \
     static inline void name##_##da_left_shift(name* da) {                               \
         assert(da->size > 0 && "Cannot shift an empty array\n");                        \
@@ -98,6 +98,9 @@
         for (int i = 0; i < amount; ++i) {                                              \
             da->items[i] = 0;                                                           \
         }                                                                               \
+    }                                                                                   \
+    static inline void name##_##da_free(name da) {                                      \
+        free(da.items);                                                                 \
     }                                                                                   \
 
 #endif /* GDA_H_ */
